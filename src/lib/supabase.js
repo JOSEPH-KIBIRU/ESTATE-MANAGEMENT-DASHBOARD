@@ -1,19 +1,33 @@
-import { createClient } from '@supabase/supabase-js';
+// lib/supabase.js
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
-// // Debug: Log raw environment variables
-// console.log('REACT_APP_SUPABASE_URL:', process.env.REACT_APP_SUPABASE_URL);
-// console.log('REACT_APP_SUPABASE_ANON_KEY:', process.env.REACT_APP_SUPABASE_ANON_KEY);
-// console.log('All env vars:', process.env);
-
-// Validate URL
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase URL or Anon Key in environment variables');
-}
-if (!supabaseUrl.startsWith('https://')) {
-  throw new Error('Supabase URL must start with https://');
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables. Please check your .env file.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+})
+
+
+// // | table_name    | column_name     | data_type                   | is_nullable |
+// | ------------- | --------------- | --------------------------- | ----------- |
+// | notifications | id              | uuid                        | NO          |
+// | notifications | tenant_id       | uuid                        | YES         |
+// | notifications | type            | character varying           | NO          |
+// | notifications | message         | text                        | NO          |
+// | notifications | sent_at         | timestamp without time zone | YES         |
+// | notifications | status          | character varying           | YES         |
+// | tenants       | id              | uuid                        | NO          |
+// | tenants       | unit_id         | uuid                        | NO          |
+// | tenants       | name            | text                        | NO          |
+// | tenants       | email           | text                        | YES         |
+// | tenants       | phone           | text                        | YES         |
+// | tenants       | created_at      | timestamp with time zone    | YES         |
+// | tenants       | commission_rate | numeric                     | YES         |

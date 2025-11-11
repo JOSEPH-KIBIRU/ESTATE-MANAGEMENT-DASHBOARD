@@ -1,74 +1,291 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Table, TableBody, TableCell, TableHead, TableRow, Button, Alert } from '@mui/material';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button,
+  Chip,
+  Box,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Typography,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+import { Edit, Delete, AttachMoney, Refresh } from '@mui/icons-material';
 
 function UnitList({ refresh }) {
   const [units, setUnits] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editDialog, setEditDialog] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [editForm, setEditForm] = useState({ rent_amount: '', unit_type: '' });
 
   useEffect(() => {
-    const fetchUnits = async () => {
-      setError('');
-      const { data, error } = await supabase
-        .from('units')
-        .select('id, unit_number, property_id, properties!fk_property(name)')
-        .order('created_at', { ascending: false });
-      console.log('Fetched units:', data);
-      if (error) {
-        console.error('Error fetching units:', error);
-        setError(`Failed to load units: ${error.message}`);
-      } else {
-        setUnits(data || []);
-      }
-    };
     fetchUnits();
   }, [refresh]);
 
-  const handleDelete = async (id) => {
+  const fetchUnits = async () => {
+    setLoading(true);
     setError('');
-    const { error } = await supabase.from('units').delete().eq('id', id);
-    if (error) {
-      console.error('Error deleting unit:', error);
-      setError(`Failed to delete unit: ${error.message}`);
-    } else {
-      setUnits(units.filter((unit) => unit.id !== id));
+    console.log('🔄 Fetching units...');
+    
+    try {
+      // FIXED: Remove 'status' from tenants selection since the column doesn't exist
+      const { data, error } = await supabase
+        .from('units')
+        .select(`
+          *,
+          properties (name),
+          tenants (id, name)  // REMOVED: , status
+        `)
+        .order('unit_number');
+      
+      if (error) {
+        console.error('❌ Units query failed:', error);
+        throw new Error(`Failed to load units: ${error.message}`);
+      }
+      
+      console.log(`✅ Found ${data?.length || 0} units with details`);
+      setUnits(data || []);
+      
+    } catch (err) {
+      console.error('💥 Error fetching units:', err);
+      setError(err.message);
+      setUnits([]);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this unit?')) return;
+    
+    try {
+      const { error } = await supabase.from('units').delete().eq('id', id);
+      if (error) throw error;
+      fetchUnits();
+    } catch (err) {
+      console.error('Error deleting unit:', err);
+      setError('Failed to delete unit: ' + err.message);
+    }
+  };
+
+  const handleEdit = (unit) => {
+    setSelectedUnit(unit);
+    setEditForm({
+      rent_amount: unit.rent_amount || '',
+      unit_type: unit.unit_type || 'residential'
+    });
+    setEditDialog(true);
+  };
+
+  const updateUnit = async () => {
+    try {
+      const { error } = await supabase
+        .from('units')
+        .update({
+          rent_amount: parseFloat(editForm.rent_amount) || null,
+          unit_type: editForm.unit_type,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedUnit.id);
+
+      if (error) throw error;
+
+      setEditDialog(false);
+      fetchUnits();
+    } catch (err) {
+      console.error('Error updating unit:', err);
+      setError('Failed to update unit: ' + err.message);
+    }
+  };
+
+  // FIXED: Simplified status logic since we don't have status column
+  const getStatusColor = (unit) => {
+    // If unit has any tenants, consider it occupied
+    if (unit.tenants && unit.tenants.length > 0) {
+      return 'success';
+    }
+    return 'default';
+  };
+
+  const getStatusText = (unit) => {
+    // If unit has any tenants, consider it occupied
+    if (unit.tenants && unit.tenants.length > 0) {
+      return 'Occupied';
+    }
+    return 'Vacant';
+  };
+
+  const getTenantName = (unit) => {
+    if (unit.tenants && unit.tenants.length > 0) {
+      return unit.tenants[0].name;
+    }
+    return 'No tenant';
+  };
+
+  const getPropertyName = (unit) => {
+    return unit.properties?.name || 'Unknown Property';
+  };
+
   return (
-    <div>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Unit Number</TableCell>
-            <TableCell>Property</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {units.length === 0 ? (
+    <Box>
+      {/* Error Alert */}
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 2 }} 
+          onClose={() => setError('')}
+          action={
+            <Button 
+              color="inherit" 
+              size="small" 
+              onClick={fetchUnits}
+              startIcon={<Refresh />}
+            >
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Table>
+          <TableHead>
             <TableRow>
-              <TableCell colSpan={3}>No units found</TableCell>
+              <TableCell><strong>Unit Number</strong></TableCell>
+              <TableCell><strong>Property</strong></TableCell>
+              <TableCell><strong>Type</strong></TableCell>
+              <TableCell><strong>Monthly Rent</strong></TableCell>
+              <TableCell><strong>Status</strong></TableCell>
+              <TableCell><strong>Tenant</strong></TableCell>
+              <TableCell><strong>Actions</strong></TableCell>
             </TableRow>
-          ) : (
-            units.map((unit) => (
-              <TableRow key={unit.id}>
-                <TableCell>{unit.unit_number}</TableCell>
-                <TableCell>{unit.properties?.name || 'Unknown'}</TableCell>
-                <TableCell>
-                  <Button>Edit</Button>
-                  <Button color="error" onClick={() => handleDelete(unit.id)}>
-                    Delete
-                  </Button>
+          </TableHead>
+          <TableBody>
+            {units.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No units found
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Add units through the Properties section
+                  </Typography>
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+            ) : (
+              units.map((unit) => (
+                <TableRow key={unit.id}>
+                  <TableCell>
+                    <strong>{unit.unit_number}</strong>
+                  </TableCell>
+                  <TableCell>{getPropertyName(unit)}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={unit.unit_type || 'residential'} 
+                      size="small" 
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AttachMoney color="action" fontSize="small" />
+                      <strong>
+                        {unit.rent_amount ? `Ksh ${unit.rent_amount.toLocaleString()}` : 'Not set'}
+                      </strong>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={getStatusText(unit)} 
+                      color={getStatusColor(unit)}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {getTenantName(unit)}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleEdit(unit)}
+                      color="primary"
+                    >
+                      <Edit />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDelete(unit.id)}
+                      color="error"
+                    >
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      )}
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Edit Unit Details</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Monthly Rent (KES)"
+              value={editForm.rent_amount}
+              onChange={(e) => setEditForm(prev => ({ ...prev, rent_amount: e.target.value }))}
+              type="number"
+              fullWidth
+              InputProps={{
+                startAdornment: <Typography sx={{ mr: 1 }}>Ksh</Typography>
+              }}
+            />
+            <TextField
+              label="Unit Type"
+              value={editForm.unit_type}
+              onChange={(e) => setEditForm(prev => ({ ...prev, unit_type: e.target.value }))}
+              select
+              fullWidth
+              SelectProps={{
+                native: true,
+              }}
+            >
+              <option value="residential">Residential</option>
+              <option value="commercial">Commercial</option>
+              <option value="storage">Storage</option>
+              <option value="parking">Parking</option>
+            </TextField>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialog(false)}>Cancel</Button>
+          <Button onClick={updateUnit} variant="contained">
+            Update Unit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
 
+// Make sure you have proper export
 export default UnitList;
