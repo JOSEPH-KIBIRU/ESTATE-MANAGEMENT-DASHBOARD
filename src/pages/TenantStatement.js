@@ -139,6 +139,7 @@ const TenantStatement = () => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'kes'
+      currency: 'Kes'
     }).format(amount)
   }
 
