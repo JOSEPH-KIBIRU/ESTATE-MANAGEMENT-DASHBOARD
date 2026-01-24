@@ -136,11 +136,12 @@ const TenantStatement = () => {
   }
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'kes'
-    }).format(amount)
-  }
+  return new Intl.NumberFormat('en-KE', {
+    style: 'currency',
+    currency: 'KES',
+    minimumFractionDigits: 2
+  }).format(amount)
+}
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString()
