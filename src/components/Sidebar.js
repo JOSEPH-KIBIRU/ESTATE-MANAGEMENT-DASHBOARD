@@ -1,9 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  List, 
-  ListItem, 
-  ListItemIcon, 
-  ListItemText, 
+import {
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   ListItemButton,
   Box,
   Typography
@@ -24,9 +24,14 @@ import {
   Folder,
   AttachMoney
 } from '@mui/icons-material';
+import { useContext } from 'react';
+import { SidebarContext } from '../context/SidebarContext';
 
 function Sidebar() {
   const location = useLocation();
+  const { sidebarOpen } = useContext(SidebarContext);
+
+  if (!sidebarOpen) return null;
 
   const menuItems = [
     { path: '/', icon: <Dashboard />, text: 'Dashboard' },
@@ -46,76 +51,59 @@ function Sidebar() {
   ];
 
   const isActive = (path) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
+    if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
   return (
-    <Box 
-      sx={{ 
-        width: 280, 
+    <Box
+      sx={{
+        width: 280,
         background: 'linear-gradient(180deg, #1e3a5c 0%, #2c5282 100%)',
-        height: '200vh',
         color: 'white',
-        boxShadow: '2px 0 10px rgba(0,0,0,0.1)'
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 1300,
+        boxShadow: '2px 0 10px rgba(0,0,0,0.2)',
+        overflowY: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none'
       }}
     >
-      {/* Sidebar Header */}
-      <Box 
-        sx={{ 
-          p: 3, 
+      {/* Header */}
+      <Box
+        sx={{
+          p: 3,
           borderBottom: '1px solid rgba(255,255,255,0.2)',
-          textAlign: 'center',
-          background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)'
+          background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
+          flexShrink: 0
         }}
       >
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontWeight: 'bold',
-            color: 'white'
-          }}
-        >
+        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
           Estate Manager
         </Typography>
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            color: 'rgba(255,255,255,0.8)',
-            mt: 1,
-            display: 'block'
-          }}
-        >
+        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)', mt: 1, display: 'block' }}>
           Management Dashboard
         </Typography>
       </Box>
 
-      {/* Navigation Menu */}
-      <List sx={{ p: 2 }}>
+      {/* Menu */}
+      <List sx={{ p: 2, flex: 1, overflowY: 'auto' }}>
         {menuItems.map((item) => (
-          <ListItem 
-            key={item.path} 
-            disablePadding 
-            sx={{ 
-              mb: 1,
-              borderRadius: 2,
-              overflow: 'hidden'
-            }}
-          >
+          <ListItem key={item.path} disablePadding sx={{ mb: 1, borderRadius: 2, overflow: 'hidden' }}>
             <ListItemButton
               component={Link}
               to={item.path}
               sx={{
                 borderRadius: 2,
                 py: 1.5,
-                backgroundColor: isActive(item.path) 
-                  ? 'rgba(255,255,255,0.2)' 
-                  : 'transparent',
-                border: isActive(item.path) 
-                  ? '1px solid rgba(255,255,255,0.4)' 
-                  : '1px solid transparent',
+                backgroundColor: isActive(item.path) ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: isActive(item.path) ? '1px solid rgba(255,255,255,0.4)' : '1px solid transparent',
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.15)',
                   border: '1px solid rgba(255,255,255,0.3)',
@@ -125,15 +113,10 @@ function Sidebar() {
                 transition: 'all 0.3s ease'
               }}
             >
-              <ListItemIcon 
-                sx={{ 
-                  minWidth: 45,
-                  color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.9)'
-                }}
-              >
+              <ListItemIcon sx={{ minWidth: 45, color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.9)' }}>
                 {item.icon}
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={item.text}
                 sx={{
                   '& .MuiTypography-root': {
@@ -148,27 +131,18 @@ function Sidebar() {
         ))}
       </List>
 
-      {/* Sidebar Footer */}
-      <Box 
-        sx={{ 
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
+      {/* Footer */}
+      <Box
+        sx={{
           p: 2,
           borderTop: '1px solid rgba(255,255,255,0.2)',
           textAlign: 'center',
-          backgroundColor: 'rgba(0,0,0,0.1)'
+          backgroundColor: 'rgba(0,0,0,0.1)',
+          flexShrink: 0
         }}
       >
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            color: 'rgba(255,255,255,0.7)',
-            fontSize: '0.75rem'
-          }}
-        >
-          v1.0.0
+        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
+          © {new Date().getFullYear()} Estate Manager
         </Typography>
       </Box>
     </Box>
