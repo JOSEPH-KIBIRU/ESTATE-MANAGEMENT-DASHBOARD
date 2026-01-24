@@ -1,7 +1,6 @@
-/* eslint-disable react/jsx-no-undef */
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { AppBar, Toolbar, Typography, Button, Dialog, DialogTitle, DialogContent, TextField } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Dialog, DialogTitle, DialogContent, TextField, Alert } from '@mui/material';
 
 function Navbar() {
   const { user, login, logout } = useContext(AuthContext);
