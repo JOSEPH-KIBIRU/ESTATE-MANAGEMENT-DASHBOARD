@@ -67,11 +67,72 @@ function UnitList({ refresh }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this unit?')) return;
-    
     try {
+      // First check for related maintenance requests
+      const { data: maintenanceRequests, error: checkError } = await supabase
+        .from('maintenance_requests')
+        .select('id, title')
+        .eq('unit_id', id);
+
+      if (checkError) {
+        console.error('Error checking maintenance requests:', checkError);
+        throw checkError;
+      }
+
+      // Check for related tenants
+      const { data: tenants, error: tenantCheckError } = await supabase
+        .from('tenants')
+        .select('id, name')
+        .eq('unit_id', id);
+
+      if (tenantCheckError) {
+        console.error('Error checking tenants:', tenantCheckError);
+        throw tenantCheckError;
+      }
+
+      // Build warning message if there are related records
+      let warningMessage = 'Are you sure you want to delete this unit?';
+      let hasRelatedRecords = false;
+
+      if (maintenanceRequests && maintenanceRequests.length > 0) {
+        hasRelatedRecords = true;
+        warningMessage += `\n\n⚠️ This unit has ${maintenanceRequests.length} maintenance request(s) that will also be deleted.`;
+      }
+
+      if (tenants && tenants.length > 0) {
+        hasRelatedRecords = true;
+        warningMessage += `\n\n⚠️ This unit has ${tenants.length} tenant(s) assigned. Please reassign or remove tenants first.`;
+        
+        // Don't allow deletion if tenants are assigned
+        setError(`Cannot delete unit: ${tenants.length} tenant(s) are still assigned to this unit. Please reassign or remove tenants first.`);
+        return;
+      }
+
+      if (hasRelatedRecords) {
+        warningMessage += '\n\nThis action cannot be undone.';
+      }
+
+      if (!window.confirm(warningMessage)) return;
+
+      // Delete related maintenance requests first
+      if (maintenanceRequests && maintenanceRequests.length > 0) {
+        const { error: deleteMaintenanceError } = await supabase
+          .from('maintenance_requests')
+          .delete()
+          .eq('unit_id', id);
+
+        if (deleteMaintenanceError) {
+          console.error('Error deleting maintenance requests:', deleteMaintenanceError);
+          throw new Error(`Failed to delete related maintenance requests: ${deleteMaintenanceError.message}`);
+        }
+        console.log(`✅ Deleted ${maintenanceRequests.length} maintenance request(s)`);
+      }
+
+      // Now delete the unit
       const { error } = await supabase.from('units').delete().eq('id', id);
       if (error) throw error;
+      
+      console.log('✅ Unit deleted successfully');
       fetchUnits();
     } catch (err) {
       console.error('Error deleting unit:', err);
@@ -287,5 +348,4 @@ function UnitList({ refresh }) {
   );
 }
 
-// Make sure you have proper export
 export default UnitList;
