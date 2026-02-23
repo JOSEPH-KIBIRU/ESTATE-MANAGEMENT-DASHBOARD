@@ -54,7 +54,6 @@ const TenantStatement = () => {
         .order('name')
 
       if (error) throw error
-      console.log('Fetched properties:', data)
       setProperties(data || [])
     } catch (error) {
       console.error('Error fetching properties:', error)
@@ -70,7 +69,6 @@ const TenantStatement = () => {
         .order('unit_number')
 
       if (error) throw error
-      console.log('Fetched units for property', propertyId, ':', data)
       setUnits(data || [])
     } catch (error) {
       console.error('Error fetching units:', error)
@@ -79,7 +77,6 @@ const TenantStatement = () => {
 
   const fetchTenants = async (unitId) => {
     try {
-      console.log('Fetching tenants for unit:', unitId)
       
       const { data, error } = await supabase
         .from('tenants')
@@ -93,12 +90,10 @@ const TenantStatement = () => {
         throw error
       }
       
-      console.log('Fetched tenants for unit', unitId, ':', data)
       setTenants(data || [])
       
       // If there's only one tenant, automatically select it
       if (data && data.length === 1) {
-        console.log('Auto-selecting single tenant:', data[0].id)
         setSelectedTenant(data[0].id)
       }
     } catch (error) {
@@ -110,7 +105,6 @@ const TenantStatement = () => {
   const fetchPayments = async (tenantId) => {
     setLoading(true)
     try {
-      console.log('Fetching payments for tenant:', tenantId)
       
       const { data, error } = await supabase
         .from('payments')
@@ -120,7 +114,6 @@ const TenantStatement = () => {
 
       if (error) throw error
       
-      console.log('Fetched payments for tenant', tenantId, ':', data)
       setPayments(data || [])
       
       // Calculate total paid
