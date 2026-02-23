@@ -36,7 +36,6 @@ function UnitList({ refresh }) {
   const fetchUnits = async () => {
     setLoading(true);
     setError('');
-    console.log('🔄 Fetching units...');
     
     try {
       // FIXED: Remove 'status' from tenants selection since the column doesn't exist
@@ -54,7 +53,6 @@ function UnitList({ refresh }) {
         throw new Error(`Failed to load units: ${error.message}`);
       }
       
-      console.log(`✅ Found ${data?.length || 0} units with details`);
       setUnits(data || []);
       
     } catch (err) {
@@ -125,14 +123,12 @@ function UnitList({ refresh }) {
           console.error('Error deleting maintenance requests:', deleteMaintenanceError);
           throw new Error(`Failed to delete related maintenance requests: ${deleteMaintenanceError.message}`);
         }
-        console.log(`✅ Deleted ${maintenanceRequests.length} maintenance request(s)`);
       }
 
       // Now delete the unit
       const { error } = await supabase.from('units').delete().eq('id', id);
       if (error) throw error;
       
-      console.log('✅ Unit deleted successfully');
       fetchUnits();
     } catch (err) {
       console.error('Error deleting unit:', err);
