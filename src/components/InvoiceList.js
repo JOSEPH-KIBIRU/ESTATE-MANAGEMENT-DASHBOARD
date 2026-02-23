@@ -33,7 +33,6 @@ function InvoiceList({ refresh }) {
           tenant_id,
           tenants!inner(name, unit_id, units!inner(unit_number, property_id, properties!inner(name)))
         `);
-      console.log('Fetched invoices:', data);
       if (error) {
         setErrorMessage(`Error fetching invoices: ${error.message}`);
       } else {
@@ -49,7 +48,6 @@ function InvoiceList({ refresh }) {
       const { data, error } = await supabase
         .from('tenants')
         .select('id, name, unit_id, units!inner(unit_number, property_id, properties!inner(name))');
-      console.log('Fetched tenants for edit:', data);
       if (error) {
         setErrorMessage(`Error fetching tenants: ${error.message}`);
       } else {
@@ -93,7 +91,6 @@ function InvoiceList({ refresh }) {
         amount: parseFloat(editAmount),
         due_date: editDueDate,
       };
-      console.log('Updating invoice with data:', updateData);
       const { data, error } = await supabase
         .from('invoices')
         .update(updateData)
@@ -103,7 +100,6 @@ function InvoiceList({ refresh }) {
         console.error('Update error details:', error);
         throw new Error(`Failed to update invoice: ${error.message} (Code: ${error.code})`);
       }
-      console.log('Updated invoice:', data);
       setSuccessMessage('Invoice updated successfully!');
       setEditInvoice(null);
     } catch (error) {
