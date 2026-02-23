@@ -76,7 +76,6 @@ const Documents = () => {
 
   const checkStorageBucket = async () => {
     try {
-      console.log('Checking storage bucket...');
       // eslint-disable-next-line no-unused-vars
       const { data, error } = await supabase.storage.from('documents').list('', { limit: 1 });
       
@@ -104,7 +103,6 @@ const Documents = () => {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      console.log('Fetching documents...');
       
       const { data, error } = await supabase
         .from('documents')
@@ -116,7 +114,6 @@ const Documents = () => {
         throw error;
       }
       
-      console.log('Fetched documents:', data);
       setDocuments(data || []);
     } catch (error) {
       console.error('Error fetching documents:', error);
@@ -175,7 +172,6 @@ const Documents = () => {
       const fileExt = newDocument.file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      console.log('Uploading file to storage:', fileName);
 
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -187,13 +183,11 @@ const Documents = () => {
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      console.log('Storage upload successful:', uploadData);
 
       // Get public URL - construct it manually to ensure it's correct
       const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
       const fileUrl = `${supabaseUrl}/storage/v1/object/public/documents/${fileName}`;
 
-      console.log('Public URL:', fileUrl);
 
       // Prepare data for database
       const documentData = {
@@ -205,7 +199,6 @@ const Documents = () => {
         file_size: newDocument.file.size
       };
 
-      console.log('Saving to database:', documentData);
 
       // Save document metadata to database
       const { data: dbData, error: dbError } = await supabase
@@ -224,7 +217,6 @@ const Documents = () => {
         throw new Error(`Database error: ${dbError.message}`);
       }
 
-      console.log('Database insert successful:', dbData);
 
       // Refresh documents list
       await fetchDocuments();
@@ -244,11 +236,9 @@ const Documents = () => {
 
   const downloadDocument = async (document) => {
     try {
-      console.log('Downloading document:', document);
       
       // Method 1: Try to use the stored file_url first
       if (document.file_url) {
-        console.log('Using file_url:', document.file_url);
         window.open(document.file_url, '_blank');
         return;
       }
@@ -256,7 +246,6 @@ const Documents = () => {
       // Method 2: Construct the URL manually
       const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
       const manualUrl = `${supabaseUrl}/storage/v1/object/public/documents/${document.file_name}`;
-      console.log('Trying manual URL:', manualUrl);
       
       // Test if the URL is accessible
       const testResponse = await fetch(manualUrl, { method: 'HEAD' });
@@ -266,7 +255,6 @@ const Documents = () => {
       }
 
       // Method 3: Use Supabase storage download (as fallback)
-      console.log('Trying storage download...');
       const { data, error } = await supabase.storage
         .from('documents')
         .download(document.file_name);
@@ -312,7 +300,6 @@ const Documents = () => {
       // Try to delete from storage
       try {
         await supabase.storage.from('documents').remove([fileName]);
-        console.log('File deleted from storage:', fileName);
       } catch (storageError) {
         console.warn('Could not delete from storage:', storageError);
       }
@@ -325,7 +312,6 @@ const Documents = () => {
 
       if (dbError) throw dbError;
 
-      console.log('Document deleted from database:', documentId);
 
       // Refresh list
       await fetchDocuments();
