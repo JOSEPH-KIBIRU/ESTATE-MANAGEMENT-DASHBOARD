@@ -104,7 +104,6 @@ const MaintenanceManager = () => {
         return;
       }
 
-      console.log('🔄 Fetching units for property:', propertyId);
 
       const { data, error } = await supabase
         .from('units')
@@ -117,7 +116,6 @@ const MaintenanceManager = () => {
         throw new Error(`Failed to load units: ${error.message}`);
       }
 
-      console.log('✅ Units found:', data);
       setUnits(data || []);
 
     } catch (error) {
@@ -142,7 +140,6 @@ const MaintenanceManager = () => {
         return;
       }
 
-      console.log('🔄 Fetching tenant for unit ID:', unitId);
 
       // Fetch tenant WITHOUT status filter
       const { data: tenantData, error: tenantError } = await supabase
@@ -167,7 +164,6 @@ const MaintenanceManager = () => {
         return;
       }
 
-      console.log('✅ Tenant query result:', tenantData);
 
       if (tenantData) {
         // Successfully found a tenant
@@ -177,7 +173,6 @@ const MaintenanceManager = () => {
           tenant_name: tenantData.name,
           tenant_phone: tenantData.phone || 'No phone number'
         }));
-        console.log('✅ Tenant set:', tenantData.name);
       } else {
         // No tenant found (normal case)
         setNewRequest(prev => ({
@@ -186,7 +181,6 @@ const MaintenanceManager = () => {
           tenant_name: 'No tenant assigned',
           tenant_phone: ''
         }));
-        console.log('ℹ️ No tenant found for this unit');
       }
 
     } catch (error) {
@@ -209,7 +203,6 @@ const MaintenanceManager = () => {
       setLoading(true);
       setError('');
       
-      console.log('Fetching maintenance requests...');
 
       const { data, error } = await supabase
         .from('maintenance_requests')
@@ -226,7 +219,6 @@ const MaintenanceManager = () => {
         throw error;
       }
       
-      console.log('Fetched requests:', data);
       setRequests(data || []);
 
     } catch (error) {
