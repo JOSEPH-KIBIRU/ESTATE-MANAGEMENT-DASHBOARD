@@ -77,7 +77,7 @@ const Documents = () => {
   const checkStorageBucket = async () => {
     try {
       // eslint-disable-next-line no-unused-vars
-      const { data, error } = await supabase.storage.from('documents').list('', { limit: 1 });
+      const { error } = await supabase.storage.from('documents').list('', { limit: 1 });
       
       if (error) {
         console.error('Storage bucket check failed:', error);
@@ -201,7 +201,7 @@ const Documents = () => {
 
 
       // Save document metadata to database
-      const { data: dbData, error: dbError } = await supabase
+      const { error: dbError } = await supabase
         .from('documents')
         .insert(documentData)
         .select();
