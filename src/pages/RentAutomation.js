@@ -149,11 +149,6 @@ const RentAutomation = () => {
         setScheduledReminders([]);
       }
 
-      console.log('Data loaded successfully:', {
-        tenants: tenantsWithRentInfo.length,
-        units: unitsData.length
-      });
-
     } catch (fetchError) {
       console.error('Error loading data:', fetchError);
       setError(`Failed to load tenant data: ${fetchError.message}`);
@@ -189,7 +184,6 @@ const RentAutomation = () => {
         status: 'sent'
       }));
 
-      console.log('Sending reminders:', reminders);
 
       // Save to database with timeout
       const { error: dbError } = await supabase
