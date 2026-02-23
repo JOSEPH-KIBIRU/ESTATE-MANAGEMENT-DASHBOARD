@@ -25,7 +25,6 @@ function Tenants() {
   useEffect(() => {
     const fetchProperties = async () => {
       const { data, error } = await supabase.from('properties').select('id, name');
-      console.log('Fetched properties:', data);
       if (error) {
         setErrorMessage(`Error fetching properties: ${error.message}`);
       } else {
