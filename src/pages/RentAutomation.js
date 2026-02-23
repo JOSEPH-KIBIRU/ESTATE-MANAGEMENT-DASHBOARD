@@ -56,7 +56,6 @@ const RentAutomation = () => {
   // Fetch tenants with actual table structure
   const fetchTenantsFromDB = useCallback(async () => {
     try {
-      console.log('Fetching tenants...');
       
       const { data: tenantsData, error: tenantsError } = await supabase
         .from('tenants')
@@ -68,7 +67,6 @@ const RentAutomation = () => {
         throw tenantsError;
       }
 
-      console.log('Fetched tenants:', tenantsData);
       return tenantsData || [];
     } catch (fetchError) {
       console.error('Error in fetchTenantsFromDB:', fetchError);
