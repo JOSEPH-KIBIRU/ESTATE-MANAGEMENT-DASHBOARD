@@ -19,7 +19,6 @@ function TenantList({ refresh }) {
         .from('tenants')
         .select('id, name, email, phone, unit_id, units!fk_unit(unit_number, property_id, properties!fk_property(name))')
         .order('created_at', { ascending: false });
-      console.log('Fetched tenants:', data);
       if (error) {
         console.error('Error fetching tenants:', error);
         setError(`Failed to load tenants: ${error.message}`);
