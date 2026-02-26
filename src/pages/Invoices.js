@@ -25,6 +25,7 @@ function Invoices() {
   useEffect(() => {
     const fetchProperties = async () => {
       const { data, error } = await supabase.from('properties').select('id, name');
+      console.log('Fetched properties:', data);
       if (error) {
         setErrorMessage(`Error fetching properties: ${error.message}`);
       } else {
@@ -44,6 +45,7 @@ function Invoices() {
           .from('tenants')
           .select('id, name, unit_id, units!inner(unit_number, property_id)')
           .eq('units.property_id', propertyId);
+        console.log('Fetched tenants for property', propertyId, ':', data);
         if (error) {
           console.error('Tenant fetch error:', error);
           setErrorMessage(`Error fetching tenants: ${error.message}`);
@@ -88,12 +90,14 @@ function Invoices() {
 
     setLoading(true);
     try {
+      console.log('Creating invoice with tenant_id:', tenantId);
       // Refresh session to ensure auth
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session ? 'authenticated' : 'anonymous');
       if (!session) {
         throw new Error('Authentication session expired. Please log in again.');
       }
-      const { data, error } = await supabase.from('invoices').insert([
+      const { error } = await supabase.from('invoices').insert([
         {
           tenant_id: tenantId,
           invoice_type: invoiceType,
@@ -101,7 +105,9 @@ function Invoices() {
           due_date: dueDate,
         },
       ]).select();
+      
       if (error) throw error;
+      
       setSuccessMessage('Invoice created successfully!');
       setPropertyId('');
       setTenantId('');
@@ -227,7 +233,7 @@ function Invoices() {
       <h3>Invoice List</h3>
       <InvoiceList refresh={refreshList} />
     </div>
-  );
+  ); 
 }
 
 export default Invoices;
