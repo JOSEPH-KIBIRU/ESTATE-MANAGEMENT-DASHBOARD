@@ -56,7 +56,7 @@ const TenantStatement = () => {
       if (error) throw error
       setProperties(data || [])
     } catch (error) {
-      .error('Error fetching properties:', error)
+      console.error('Error fetching properties:', error)
     }
   }
 
@@ -71,7 +71,7 @@ const TenantStatement = () => {
       if (error) throw error
       setUnits(data || [])
     } catch (error) {
-      .error('Error fetching units:', error)
+      console.error('Error fetching units:', error)
     }
   }
 
