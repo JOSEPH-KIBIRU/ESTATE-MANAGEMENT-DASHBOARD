@@ -229,11 +229,9 @@ function PropertyList({ refresh }) {
           )}
         </Box>
 
-        {/* Edit Dialog (same for both mobile and desktop) */}
+        {/* Edit Dialog */}
         <Dialog open={openEditDialog} onClose={handleEditCancel} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            Edit Property
-          </DialogTitle>
+          <DialogTitle>Edit Property</DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
               <TextField
@@ -292,7 +290,7 @@ function PropertyList({ refresh }) {
     );
   }
 
-  // Desktop table view (original)
+  // Desktop table view
   return (
     <>
       <Table sx={{ minWidth: 650 }}>
@@ -345,9 +343,7 @@ function PropertyList({ refresh }) {
 
       {/* Edit Dialog */}
       <Dialog open={openEditDialog} onClose={handleEditCancel} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          Edit Property
-        </DialogTitle>
+        <DialogTitle>Edit Property</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField
