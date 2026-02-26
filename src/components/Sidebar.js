@@ -29,11 +29,18 @@ import {
 } from '@mui/icons-material';
 import { useContext } from 'react';
 import { SidebarContext } from '../context/SidebarContext';
+import { AuthContext } from '../context/AuthContext';
 
 function Sidebar() {
   const location = useLocation();
   const { sidebarOpen, setSidebarOpen } = useContext(SidebarContext);
+  const { user } = useContext(AuthContext);
   const isMobile = useMediaQuery('(max-width:768px)');
+
+  // Don't render sidebar at all if user is not logged in
+  if (!user) {
+    return null;
+  }
 
   const menuItems = [
     { path: '/', icon: <Dashboard />, text: 'Dashboard' },
@@ -55,6 +62,12 @@ function Sidebar() {
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
+  };
+
+  const handleNavigation = () => {
+    if (isMobile) {
+      setSidebarOpen(false); // Close sidebar on mobile after clicking
+    }
   };
 
   const sidebarContent = (
@@ -96,11 +109,7 @@ function Sidebar() {
             <ListItemButton
               component={Link}
               to={item.path}
-              onClick={() => {
-                if (isMobile) {
-                  setSidebarOpen(false); // Close sidebar on mobile after clicking
-                }
-              }}
+              onClick={handleNavigation}
               sx={{
                 borderRadius: 2,
                 py: 1.5,
@@ -162,7 +171,8 @@ function Sidebar() {
             width: 280,
             boxSizing: 'border-box',
             backgroundColor: 'transparent',
-            border: 'none'
+            border: 'none',
+            mt: '64px' // Add margin top to account for AppBar
           }
         }}
       >
@@ -183,7 +193,7 @@ function Sidebar() {
         left: 0,
         height: '100vh',
         zIndex: 1200,
-        pt: '64px' 
+        pt: '64px' // Add padding top to account for AppBar
       }}
     >
       {sidebarContent}
