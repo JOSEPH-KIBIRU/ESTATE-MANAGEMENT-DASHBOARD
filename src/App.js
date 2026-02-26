@@ -1,3 +1,4 @@
+// src/App.js
 import {
   BrowserRouter as Router,
   Routes,
@@ -22,12 +23,14 @@ import RentAutomation from "./pages/RentAutomation";
 import MaintenanceManager from "./components/MaintenanceManager";
 import Documents from "./pages/Documents";
 import RentCollection from "./pages/RentCollection";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, useMediaQuery } from "@mui/material";
 import { SidebarContext } from "./context/SidebarContext";
+
 // App component
 function App() {
   const { user, loading } = useContext(AuthContext);
   const { sidebarOpen } = useContext(SidebarContext);
+  const isMobile = useMediaQuery('(max-width:768px)');
 
   if (loading) {
     return (
@@ -44,23 +47,30 @@ function App() {
     );
   }
 
+  // Calculate margin based on sidebar state
+  const getContentMargin = () => {
+    if (isMobile) return "0"; // No margin on mobile
+    if (user && sidebarOpen) return "280px"; // Desktop with open sidebar
+    return "0"; // Desktop with closed sidebar or no user
+  };
+
   return (
     <Router>
-      <div
-        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-      >
+      <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <Navbar />
-        <div style={{ display: "flex", flex: 1 }}>
-          {/* Show Sidebar ONLY when user is logged in */}
-          {user && <Sidebar />}
-
-          <div
-            style={{
+        <Box sx={{ display: "flex", flex: 1, position: 'relative' }}>
+          <Sidebar />
+          <Box
+            component="main"
+            sx={{
               flex: 1,
-              padding: "20px",
-              marginLeft: user ? (sidebarOpen ? "280px" : "0") : "0",
+              p: 3,
+              ml: getContentMargin(),
               backgroundColor: "#fafafa",
               minHeight: "calc(100vh - 64px)",
+              mt: "64px", // Add margin top to account for fixed AppBar
+              transition: 'margin-left 0.3s ease',
+              width: '100%'
             }}
           >
             <Routes>
@@ -123,9 +133,9 @@ function App() {
 
               <Route path="*" element={<h2>404: Page Not Found</h2>} />
             </Routes>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </Router>
   );
 }
