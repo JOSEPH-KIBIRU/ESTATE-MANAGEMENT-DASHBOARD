@@ -1,3 +1,4 @@
+// src/components/Sidebar.js
 import { Link, useLocation } from 'react-router-dom';
 import {
   List,
@@ -6,7 +7,9 @@ import {
   ListItemText,
   ListItemButton,
   Box,
-  Typography
+  Typography,
+  Drawer,
+  useMediaQuery
 } from '@mui/material';
 import {
   Dashboard,
@@ -29,9 +32,8 @@ import { SidebarContext } from '../context/SidebarContext';
 
 function Sidebar() {
   const location = useLocation();
-  const { sidebarOpen } = useContext(SidebarContext);
-
-  if (!sidebarOpen) return null;
+  const { sidebarOpen, setSidebarOpen } = useContext(SidebarContext);
+  const isMobile = useMediaQuery('(max-width:768px)');
 
   const menuItems = [
     { path: '/', icon: <Dashboard />, text: 'Dashboard' },
@@ -55,20 +57,15 @@ function Sidebar() {
     return location.pathname.startsWith(path);
   };
 
-  return (
+  const sidebarContent = (
     <Box
       sx={{
         width: 280,
         background: 'linear-gradient(180deg, #1e3a5c 0%, #2c5282 100%)',
         color: 'white',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        height: '100vh',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 1300,
-        boxShadow: '2px 0 10px rgba(0,0,0,0.2)',
         overflowY: 'auto',
         '&::-webkit-scrollbar': { display: 'none' },
         msOverflowStyle: 'none',
@@ -99,6 +96,11 @@ function Sidebar() {
             <ListItemButton
               component={Link}
               to={item.path}
+              onClick={() => {
+                if (isMobile) {
+                  setSidebarOpen(false); // Close sidebar on mobile after clicking
+                }
+              }}
               sx={{
                 borderRadius: 2,
                 py: 1.5,
@@ -145,6 +147,46 @@ function Sidebar() {
           © {new Date().getFullYear()} Estate Manager
         </Typography>
       </Box>
+    </Box>
+  );
+
+  // For mobile: use Drawer component that slides in/out
+  if (isMobile) {
+    return (
+      <Drawer
+        anchor="left"
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: 280,
+            boxSizing: 'border-box',
+            backgroundColor: 'transparent',
+            border: 'none'
+          }
+        }}
+      >
+        {sidebarContent}
+      </Drawer>
+    );
+  }
+
+  // For desktop: show permanently if open
+  if (!sidebarOpen) return null;
+
+  return (
+    <Box
+      sx={{
+        width: 280,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        zIndex: 1200,
+        pt: '64px' 
+      }}
+    >
+      {sidebarContent}
     </Box>
   );
 }
