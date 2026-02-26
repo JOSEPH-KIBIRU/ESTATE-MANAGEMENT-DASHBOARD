@@ -12,7 +12,8 @@ import {
   DialogContent,
   TextField,
   Alert,
-  IconButton
+  IconButton,
+  useMediaQuery
 } from '@mui/material';
 import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon } from '@mui/icons-material';
 
@@ -23,6 +24,9 @@ function Navbar() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  
+  // Check if screen is mobile
+  const isMobile = useMediaQuery('(max-width:768px)');
 
   const handleLogin = async () => {
     try {
@@ -36,16 +40,29 @@ function Navbar() {
     }
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <AppBar position="static">
+    <AppBar 
+      position="fixed" 
+      sx={{ 
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        background: 'linear-gradient(135deg, #1e3a5c 0%, #2c5282 100%)'
+      }}
+    >
       <Toolbar>
-        {/* Hamburger toggle (only when logged in) */}
-        {user && (
+        {/* Hamburger menu - Always visible on mobile, only when logged in on desktop */}
+        {(isMobile || user) && (
           <IconButton
             edge="start"
             color="inherit"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            sx={{ mr: 2 }}
+            onClick={toggleSidebar}
+            sx={{ 
+              mr: 2,
+              display: { xs: 'block', md: user ? 'block' : 'none' }
+            }}
           >
             {sidebarOpen ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
